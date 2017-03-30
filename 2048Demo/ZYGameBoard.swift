@@ -155,6 +155,7 @@ class ZYGameBoard: UIView {
     
     private func moveTile(direction: ZYDirection, cellLines: [[ZYTileCell]], combinedCellLines: [[ZYTileCell]]) {
         for (lineIndex, lineCells) in cellLines.enumerated() {
+            var needMoreStep = false
             for (index, originCell) in lineCells.enumerated() {
                 
                 let combinedCells = combinedCellLines[lineIndex]
@@ -166,36 +167,36 @@ class ZYGameBoard: UIView {
                     toIndex = combinedCells.count - 1
                 }
                 
+                var delta = 0
+                if needMoreStep {
+                    delta = 1
+                }
+                
                 switch direction {
                 case .up:
-                    distance = CGFloat(toIndex - originCell.tilePath.row) * (originCell.frame.height + margin)
+                    distance = CGFloat(toIndex - originCell.tilePath.row - delta) * (originCell.frame.height + margin)
                     cellFrame.origin.y += distance
                     originCell.tilePath = ZYTilePath(row: toIndex, column: lineIndex)
                     break
                 case .down:
-                    if toIndex > combinedCells.count - 1 {
-                        toIndex = combinedCells.count - 1
-                    }
-                    toIndex = 3 - index
-                    distance = CGFloat(toIndex - originCell.tilePath.row) * (originCell.frame.height + margin)
+                    toIndex = 3 - toIndex
+                    distance = CGFloat(toIndex - originCell.tilePath.row + delta) * (originCell.frame.height + margin)
                     cellFrame.origin.y += distance
                     originCell.tilePath = ZYTilePath(row: toIndex, column: lineIndex)
                     break
                 case .left:
-                    distance = CGFloat(toIndex - originCell.tilePath.column) * (originCell.frame.height + margin)
+                    distance = CGFloat(toIndex - originCell.tilePath.column - delta) * (originCell.frame.height + margin)
                     cellFrame.origin.x += distance
                     originCell.tilePath = ZYTilePath(row: lineIndex, column: toIndex)
                     break
                 case .right:
-                    if toIndex > combinedCells.count - 1 {
-                        toIndex = combinedCells.count - 1
-                    }
-                    toIndex = 3 - index
-                    distance = CGFloat(toIndex - originCell.tilePath.column) * (originCell.frame.height + margin)
+                    toIndex = 3 - toIndex
+                    distance = CGFloat(toIndex - originCell.tilePath.column + delta) * (originCell.frame.height + margin)
                     cellFrame.origin.x += distance
                     originCell.tilePath = ZYTilePath(row: lineIndex, column: toIndex)
                     break
                 }
+                needMoreStep = originCell.isCombined
                 if distance != 0 {
                     UIView.animate(withDuration: 0.1, animations: {
                         originCell.frame = cellFrame
@@ -220,21 +221,27 @@ class ZYGameBoard: UIView {
         for tileCell in sortedCells {
             newTileCells.append(tileCell)
         }
+        var combinedIndex = 1000
         for (cellIndex, cell) in sortedCells.enumerated() {
-            if cellIndex + 1 < sortedCells.count {
+            cell.isCombined = false
+            if cellIndex + 1 < sortedCells.count && cellIndex != combinedIndex + 1 {
                 if sortedCells[cellIndex].num == sortedCells[cellIndex + 1].num {
                     if needMove {
                         cell.num = cell.num! * 2
-                        newTileCells.remove(at: cellIndex + 1)
-                        let superfluousCell = sortedCells[cellIndex + 1]
+                        if isSameNumExist {
+                            newTileCells.remove(at: cellIndex)
+                        }else {
+                            newTileCells.remove(at: cellIndex + 1)
+                        }
+                        let extraCell = sortedCells[cellIndex + 1]
                         UIView.animate(withDuration: 0.1, animations: {
-                            superfluousCell.alpha = 0
+                            extraCell.alpha = 0
                         }, completion: { (_) in
-                            superfluousCell.removeFromSuperview()
+                            extraCell.removeFromSuperview()
                         })
                         var index = 0
                         for tileCell in tileCells {
-                            if superfluousCell.cellID == tileCell.cellID {
+                            if extraCell.cellID == tileCell.cellID {
                                 break
                             }
                             index += 1
@@ -247,10 +254,13 @@ class ZYGameBoard: UIView {
                             scoreChanged!(cell.num!)
                         }
                     }
+                    combinedIndex = cellIndex
                     isSameNumExist = true
                 }
             }
         }
+        print(newTileCells)
+        print("")
         return newTileCells
     }
     
