@@ -105,7 +105,6 @@ class ZYGameBoard: UIView {
             cellLines.append([ZYTileCell]())
         }
         
-        var sortWay : (ZYTileCell, ZYTileCell) -> Bool
         for tileCell in tileCells {
             for index in 0..<cellLines.count {
                 if ((direction == .up || direction == .down) && tileCell.tilePath.column == index) || ((direction == .left || direction == .right) && tileCell.tilePath.row == index) {
@@ -113,6 +112,7 @@ class ZYGameBoard: UIView {
                 }
             }
         }
+        var sortWay : (ZYTileCell, ZYTileCell) -> Bool
         switch direction {
         case .up:
             sortWay = { (cell1, cell2) -> Bool in
@@ -166,7 +166,6 @@ class ZYGameBoard: UIView {
                 if toIndex > combinedCells.count - 1 {
                     toIndex = combinedCells.count - 1
                 }
-                
                 var delta = 0
                 if needMoreStep {
                     delta = 1
