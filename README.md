@@ -13,7 +13,7 @@
 
 实现效果如下：
 
-<img src="http://ogdqxib8j.bkt.clouddn.com/2048.gif" width="203" height="384">
+<img src="GIF/2048.gif" width="203" height="384">
 
 <!--more-->
 # 具体实现
